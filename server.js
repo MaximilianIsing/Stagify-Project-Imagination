@@ -89,7 +89,8 @@ app.post("/process", upload.single("pdf"), async (req, res) => {
     }
 
     // Read merged PDF and send response
-    const pdfBuffer = await fs.promises.readFile(result.mergedPdfPath);
+    const mergedPdfPath = result.mergedPdfPath;
+    const pdfBuffer = await fs.promises.readFile(mergedPdfPath);
     const outputFilename = req.query.filename || `processed-${requestId}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
@@ -98,12 +99,18 @@ app.post("/process", upload.single("pdf"), async (req, res) => {
 
     console.log(`[Server] Sending PDF response for request ${requestId} (${pdfBuffer.length} bytes)`);
     
-    // Send response and cleanup temp directory after response is sent
+    // Send response
     res.send(pdfBuffer);
     
-    // Cleanup temp directory after response is sent (non-blocking)
+    // Delete merged PDF immediately after sending (non-blocking)
     setImmediate(async () => {
       try {
+        // Delete merged PDF file first
+        if (fs.existsSync(mergedPdfPath)) {
+          await fs.promises.unlink(mergedPdfPath);
+          console.log(`[Server] Deleted merged PDF for request ${requestId}`);
+        }
+        // Then cleanup entire temp directory
         await fs.promises.rm(tempDir, { recursive: true, force: true });
         console.log(`[Server] Cleaned up temp directory for request ${requestId}`);
       } catch (cleanupError) {
