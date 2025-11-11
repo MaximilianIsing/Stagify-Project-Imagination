@@ -17,6 +17,7 @@ generated/
 output/
 temp/
 tmp/
+uploads/
 
 # Debug and Preview Files
 *-crop.png

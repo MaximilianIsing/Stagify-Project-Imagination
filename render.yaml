@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: pdf-processing-server
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    # Health check endpoint
+    healthCheckPath: /health
+    # Resource limits (adjust based on your needs)
+    plan: starter  # or standard, pro, etc.
+    # Auto-deploy from main branch
+    autoDeploy: true
+
